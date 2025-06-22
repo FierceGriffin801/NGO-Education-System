@@ -1,0 +1,258 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Students - NGO Education System{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="header-content">
+        <div class="header-text">
+            <h1>👥 Students Management</h1>
+            <p>Manage and track student information across all centers</p>
+        </div>
+        <div class="header-actions">
+            <a href="{% url 'add_student' %}" class="btn btn-success">
+                <i class="fas fa-plus"></i> Add New Student
+            </a>
+            <a href="{% url 'mark_attendance' %}" class="btn btn-primary">
+                <i class="fas fa-check-circle"></i> Mark Attendance
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="filters-section">
+    <div class="filters-container">
+        <form method="GET" class="filters-form">
+            <div class="filter-group">
+                <label class="filter-label">Search Students</label>
+                <div class="search-input-wrapper">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" name="search" placeholder="Search by name or student ID..." 
+                           value="{{ search_query }}" class="form-control search-input">
+                </div>
+            </div>
+            <div class="filter-group">
+                <label class="filter-label">Filter by Center</label>
+                <select name="center" class="form-control">
+                    <option value="">All Centers</option>
+                    {% for center in centers %}
+                    <option value="{{ center.id }}" 
+                            {% if center.id|stringformat:"s" == center_filter %}selected{% endif %}>
+                        {{ center.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-filter"></i> Apply Filters
+                </button>
+                <a href="{% url 'student_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Clear
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="students-stats">
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-content">
+                <h3>Total Students</h3>
+                <div class="stat-value">{{ students.paginator.count }}</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-user-check"></i>
+            </div>
+            <div class="stat-content">
+                <h3>Active Students</h3>
+                <div class="stat-value">{{ students.paginator.count }}</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-graduation-cap"></i>
+            </div>
+            <div class="stat-content">
+                <h3>New This Month</h3>
+                <div class="stat-value">24</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="table-section">
+    <div class="table-header">
+        <h2>📋 Student Directory</h2>
+        <div class="table-actions">
+            <button class="btn btn-outline">
+                <i class="fas fa-download"></i> Export
+            </button>
+            <button class="btn btn-outline">
+                <i class="fas fa-print"></i> Print
+            </button>
+        </div>
+    </div>
+    
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>
+                        <div class="th-content">
+                            <i class="fas fa-id-card"></i>
+                            Student ID
+                        </div>
+                    </th>
+                    <th>
+                        <div class="th-content">
+                            <i class="fas fa-user"></i>
+                            Student Name
+                        </div>
+                    </th>
+                    <th>
+                        <div class="th-content">
+                            <i class="fas fa-building"></i>
+                            Center
+                        </div>
+                    </th>
+                    <th>
+                        <div class="th-content">
+                            <i class="fas fa-calendar"></i>
+                            Enrollment Date
+                        </div>
+                    </th>
+                    <th>
+                        <div class="th-content">
+                            <i class="fas fa-user-friends"></i>
+                            Guardian
+                        </div>
+                    </th>
+                    <th>
+                        <div class="th-content">
+                            <i class="fas fa-phone"></i>
+                            Contact
+                        </div>
+                    </th>
+                    <th>
+                        <div class="th-content">
+                            <i class="fas fa-cogs"></i>
+                            Actions
+                        </div>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in students %}
+                <tr class="student-row">
+                    <td>
+                        <div class="student-id">
+                            <span class="id-badge">{{ student.student_id }}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="student-info">
+                            <div class="student-avatar">
+                                <i class="fas fa-user-circle"></i>
+                            </div>
+                            <div class="student-details">
+                                <div class="student-name">{{ student.first_name }} {{ student.last_name }}</div>
+                                <div class="student-meta">{{ student.gender }} • Age: 
+                                    {% now "Y" as current_year %}
+                                    {{ current_year|add:"-1"|add:student.date_of_birth.year|add:"-1" }}
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="center-info">
+                            <i class="fas fa-map-marker-alt center-icon"></i>
+                            <span>{{ student.center.name }}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="date-info">
+                            <i class="fas fa-calendar-plus date-icon"></i>
+                            <span>{{ student.enrollment_date|date:"M d, Y" }}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="guardian-info">
+                            <i class="fas fa-user-shield guardian-icon"></i>
+                            <span>{{ student.guardian_name }}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="contact-info">
+                            <i class="fas fa-phone contact-icon"></i>
+                            <span>{{ student.guardian_phone }}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <a href="{% url 'student_detail' student.id %}" class="btn btn-primary btn-sm" title="View Details">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="#" class="btn btn-success btn-sm" title="Edit Student">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="#" class="btn btn-warning btn-sm" title="Mark Attendance">
+                                <i class="fas fa-check"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="empty-state">
+                        <div class="empty-content">
+                            <i class="fas fa-user-plus empty-icon"></i>
+                            <h3>No Students Found</h3>
+                            <p>No students match your current filters. Try adjusting your search criteria or <a href="{% url 'add_student' %}">add a new student</a>.</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Pagination -->
+{% if students.has_other_pages %}
+<div class="pagination-section">
+    <div class="pagination-info">
+        <span>Showing {{ students.start_index }} to {{ students.end_index }} of {{ students.paginator.count }} students</span>
+    </div>
+    <div class="pagination">
+        {% if students.has_previous %}
+            <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if center_filter %}&center={{ center_filter }}{% endif %}" class="page-link page-first">
+                <i class="fas fa-angle-double-left"></i>
+            </a>
+            <a href="?page={{ students.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if center_filter %}&center={{ center_filter }}{% endif %}" class="page-link">
+                <i class="fas fa-angle-left"></i>
+            </a>
+        {% endif %}
+        
+        <span class="page-current">
+            Page {{ students.number }} of {{ students.paginator.num_pages }}
+        </span>
+        
+        {% if students.has_next %}
+            <a href="?page={{ students.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if center_filter %}&center={{ center_filter }}{% endif %}" class="page-link">
+                <i class="fas fa-angle-right"></i>
+            </a>
+            <a href="?page={{ students.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if center_filter %}&center={{ center_filter }}{% endif %}" class="page-link page-last">
+                <i class="fas fa-angle-double-right"></i>
+            </a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}

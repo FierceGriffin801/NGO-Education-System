@@ -1,0 +1,94 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Generate Report - NGO Education System{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="header-content">
+        <div class="header-text">
+            <h1>📊 Generate New Report</h1>
+            <p>Create comprehensive reports for analysis and stakeholders</p>
+        </div>
+        <div class="header-actions">
+            <a href="{% url 'reports' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Reports
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="form-section">
+    <div class="form-container">
+        <form method="POST" class="report-form" id="reportForm">
+            {% csrf_token %}
+            
+            <div class="form-header">
+                <h3>📋 Report Configuration</h3>
+                <p>Configure your report parameters and data range</p>
+            </div>
+            
+            <div class="form-grid">
+                <div class="form-group form-group-full">
+                    <label class="form-label required">Report Title</label>
+                    {{ form.title }}
+                    {% if form.title.errors %}
+                        <div class="form-error">{{ form.title.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label required">Report Type</label>
+                    {{ form.report_type }}
+                    {% if form.report_type.errors %}
+                        <div class="form-error">{{ form.report_type.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label required">From Date</label>
+                    {{ form.date_from }}
+                    {% if form.date_from.errors %}
+                        <div class="form-error">{{ form.date_from.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label required">To Date</label>
+                    {{ form.date_to }}
+                    {% if form.date_to.errors %}
+                        <div class="form-error">{{ form.date_to.errors.0 }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="form-section-divider">
+                <h4>🏢 Select Centers (Optional)</h4>
+            </div>
+            
+            <div class="centers-selection">
+                {{ form.centers }}
+                {% if form.centers.errors %}
+                    <div class="form-error">{{ form.centers.errors.0 }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn btn-success btn-lg">
+                    <i class="fas fa-cog"></i> Generate Report
+                </button>
+                <a href="{% url 'reports' %}" class="btn btn-secondary btn-lg">
+                    <i class="fas fa-times"></i> Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.getElementById('reportForm').addEventListener('submit', function(e) {
+    const submitBtn = this.querySelector('button[type="submit"]');
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+    submitBtn.disabled = true;
+});
+</script>
+{% endblock %}

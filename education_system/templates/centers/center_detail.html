@@ -1,0 +1,27 @@
+{% extends 'base/base.html' %}
+
+{% block title %}{{ center.name }} - Center Details{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="header-content">
+        <div class="header-text">
+            <h1>🏢 {{ center.name }}</h1>
+            <p>{{ center.location }}</p>
+        </div>
+        <div class="header-actions">
+            <a href="{% url 'center_list' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Centers
+            </a>
+            <a href="#" class="btn btn-primary">
+                <i class="fas fa-edit"></i> Edit Center
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="center-detail-content">
+    <h2>Center Details - Coming Soon</h2>
+    <p>This page will show detailed information about {{ center.name }}</p>
+</div>
+{% endblock %}

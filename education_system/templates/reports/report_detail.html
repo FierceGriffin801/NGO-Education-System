@@ -1,0 +1,100 @@
+{% extends 'base/base.html' %}
+
+{% block title %}{{ report.title }} - Report Details{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="header-content">
+        <div class="header-text">
+            <h1>📊 {{ report.title }}</h1>
+            <p>{{ report.get_report_type_display }} • {{ report.date_from }} to {{ report.date_to }}</p>
+        </div>
+        <div class="header-actions">
+            <a href="{% url 'report_list' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Reports
+            </a>
+            {% if report.status == 'completed' and report.file_path %}
+            <a href="{% url 'download_report' report.id %}" class="btn btn-success">
+                <i class="fas fa-download"></i> Download PDF
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="report-detail-content">
+    <div class="report-status-card">
+        <h3>Report Status</h3>
+        <div class="status-info">
+            {% if report.status == 'completed' %}
+                <span class="status-indicator status-success">
+                    <i class="fas fa-check-circle"></i>
+                    Completed
+                </span>
+            {% elif report.status == 'generating' %}
+                <span class="status-indicator status-warning">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    Generating
+                </span>
+            {% elif report.status == 'failed' %}
+                <span class="status-indicator status-error">
+                    <i class="fas fa-times-circle"></i>
+                    Failed
+                </span>
+            {% else %}
+                <span class="status-indicator status-pending">
+                    <i class="fas fa-clock"></i>
+                    Pending
+                </span>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if report_data %}
+    <div class="report-data-section">
+        <h3>Report Summary</h3>
+        
+        {% if report.report_type == 'attendance' %}
+        <div class="data-grid">
+            <div class="data-item">
+                <label>Total Records</label>
+                <span>{{ report_data.total_records }}</span>
+            </div>
+            <div class="data-item">
+                <label>Present</label>
+                <span>{{ report_data.present_records }}</span>
+            </div>
+            <div class="data-item">
+                <label>Absent</label>
+                <span>{{ report_data.absent_records }}</span>
+            </div>
+            <div class="data-item">
+                <label>Attendance Rate</label>
+                <span>{{ report_data.attendance_rate|floatformat:1 }}%</span>
+            </div>
+        </div>
+        
+        {% elif report.report_type == 'center' %}
+        <div class="data-grid">
+            <div class="data-item">
+                <label>Total Centers</label>
+                <span>{{ report_data.total_centers }}</span>
+            </div>
+            <div class="data-item">
+                <label>Total Students</label>
+                <span>{{ report_data.total_students }}</span>
+            </div>
+            <div class="data-item">
+                <label>Total Capacity</label>
+                <span>{{ report_data.total_capacity }}</span>
+            </div>
+            <div class="data-item">
+                <label>Overall Utilization</label>
+                <span>{{ report_data.overall_utilization }}%</span>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

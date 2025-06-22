@@ -1,0 +1,197 @@
+{% extends 'base/base.html' %}
+
+{% block title %}{{ student.first_name }} {{ student.last_name }} - Student Details{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="header-content">
+        <div class="header-text">
+            <h1>👤 {{ student.first_name }} {{ student.last_name }}</h1>
+            <p>Student ID: {{ student.student_id }} • {{ student.center.name }}</p>
+        </div>
+        <div class="header-actions">
+            <a href="{% url 'student_list' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Students
+            </a>
+            <a href="#" class="btn btn-primary">
+                <i class="fas fa-edit"></i> Edit Student
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="student-detail-grid">
+    <!-- Personal Information Card -->
+    <div class="detail-card">
+        <div class="card-header">
+            <div class="card-icon">
+                <i class="fas fa-user"></i>
+            </div>
+            <h3>Personal Information</h3>
+        </div>
+        <div class="card-content">
+            <div class="info-grid">
+                <div class="info-item">
+                    <label>Full Name</label>
+                    <span>{{ student.first_name }} {{ student.last_name }}</span>
+                </div>
+                <div class="info-item">
+                    <label>Student ID</label>
+                    <span class="id-badge">{{ student.student_id }}</span>
+                </div>
+                <div class="info-item">
+                    <label>Date of Birth</label>
+                    <span>{{ student.date_of_birth|date:"F d, Y" }}</span>
+                </div>
+                <div class="info-item">
+                    <label>Age</label>
+                    <span>{{ age }} years</span>
+                </div>
+                <div class="info-item">
+                    <label>Gender</label>
+                    <span>{{ student.get_gender_display }}</span>
+                </div>
+                <div class="info-item">
+                    <label>Enrollment Date</label>
+                    <span>{{ student.enrollment_date|date:"F d, Y" }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Center Information Card -->
+    <div class="detail-card">
+        <div class="card-header">
+            <div class="card-icon">
+                <i class="fas fa-building"></i>
+            </div>
+            <h3>Center Information</h3>
+        </div>
+        <div class="card-content">
+            <div class="info-grid">
+                <div class="info-item">
+                    <label>Learning Center</label>
+                    <span>{{ student.center.name }}</span>
+                </div>
+                <div class="info-item">
+                    <label>Location</label>
+                    <span>{{ student.center.location }}</span>
+                </div>
+                <div class="info-item">
+                    <label>Coordinator</label>
+                    <span>{{ student.center.coordinator.get_full_name|default:student.center.coordinator.username }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Guardian Information Card -->
+    <div class="detail-card">
+        <div class="card-header">
+            <div class="card-icon">
+                <i class="fas fa-user-friends"></i>
+            </div>
+            <h3>Guardian Information</h3>
+        </div>
+        <div class="card-content">
+            <div class="info-grid">
+                <div class="info-item">
+                    <label>Guardian Name</label>
+                    <span>{{ student.guardian_name }}</span>
+                </div>
+                <div class="info-item">
+                    <label>Phone Number</label>
+                    <span>{{ student.guardian_phone }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Attendance Overview Card -->
+    <div class="detail-card">
+        <div class="card-header">
+            <div class="card-icon">
+                <i class="fas fa-calendar-check"></i>
+            </div>
+            <h3>Attendance Overview</h3>
+        </div>
+        <div class="card-content">
+            <div class="attendance-stats">
+                <div class="stat-item">
+                    <div class="stat-value">{{ attendance_percentage }}%</div>
+                    <div class="stat-label">Attendance Rate</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">{{ recent_attendance.count }}</div>
+                    <div class="stat-label">Days Tracked</div>
+                </div>
+            </div>
+            <div class="progress-bar" style="margin-top: 1rem;">
+                <div class="progress-fill" style="width: {{ attendance_percentage }}%;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Academic Performance Card -->
+    <div class="detail-card">
+        <div class="card-header">
+            <div class="card-icon">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <h3>Academic Performance</h3>
+        </div>
+        <div class="card-content">
+            <div class="performance-stats">
+                <div class="stat-item">
+                    <div class="stat-value">{{ avg_percentage|floatformat:1 }}%</div>
+                    <div class="stat-label">Average Score</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">{{ recent_grades.count }}</div>
+                    <div class="stat-label">Assessments</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity Card -->
+    <div class="detail-card full-width">
+        <div class="card-header">
+            <div class="card-icon">
+                <i class="fas fa-history"></i>
+            </div>
+            <h3>Recent Activity</h3>
+        </div>
+        <div class="card-content">
+            <div class="activity-list">
+                {% for attendance in recent_attendance %}
+                <div class="activity-item">
+                    <div class="activity-icon">
+                        {% if attendance.is_present %}
+                            <i class="fas fa-check-circle text-success"></i>
+                        {% else %}
+                            <i class="fas fa-times-circle text-danger"></i>
+                        {% endif %}
+                    </div>
+                    <div class="activity-content">
+                        <div class="activity-title">
+                            {% if attendance.is_present %}
+                                Present
+                            {% else %}
+                                Absent
+                            {% endif %}
+                        </div>
+                        <div class="activity-date">{{ attendance.date|date:"F d, Y" }}</div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="empty-state">
+                    <i class="fas fa-calendar-times"></i>
+                    <p>No attendance records found</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends 'base/base.html' %}
+{% block title %}Add Grade - NGO Education System{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div class="header-content">
+        <div class="header-text">
+            <h1>➕ Add Student Grade</h1>
+            <p>Enter marks and grades for student assessments</p>
+        </div>
+        <div class="header-actions">
+            <a href="{% url 'grade_list' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Grades
+            </a>
+        </div>
+    </div>
+</div>
+<div class="form-section">
+    <div class="form-container">
+        <form method="POST" class="grade-form">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <div class="form-actions">
+                <button type="submit" class="btn btn-success btn-lg">
+                    <i class="fas fa-save"></i> Save Grade
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

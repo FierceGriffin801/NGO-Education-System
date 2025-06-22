@@ -1,0 +1,233 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Mark Attendance - NGO Education System{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="header-content">
+        <div class="header-text">
+            <h1>✅ Mark Attendance</h1>
+            <p>Record daily attendance for students across all centers</p>
+        </div>
+        <div class="header-actions">
+            <a href="{% url 'student_list' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Students
+            </a>
+            <a href="#" class="btn btn-primary" onclick="markAllPresent()">
+                <i class="fas fa-check-double"></i> Mark All Present
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Attendance Filter Section -->
+<div class="attendance-filter-section">
+    <div class="filter-container">
+        <form method="GET" class="attendance-filter-form" id="filterForm">
+            <div class="filter-grid">
+                <div class="filter-group">
+                    <label class="filter-label">📅 Attendance Date</label>
+                    <input type="date" name="date" value="{{ selected_date|date:'Y-m-d' }}" 
+                           class="form-control" onchange="document.getElementById('filterForm').submit();">
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">🏢 Select Center</label>
+                    <select name="center" class="form-control" onchange="document.getElementById('filterForm').submit();">
+                        <option value="">All Centers</option>
+                        {% for center in centers %}
+                        <option value="{{ center.id }}" 
+                                {% if center.id|stringformat:"s" == selected_center %}selected{% endif %}>
+                            {{ center.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">📊 Quick Stats</label>
+                    <div class="quick-stats">
+                        <span class="stat-item">
+                            <i class="fas fa-users"></i>
+                            {{ students.count }} Students
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Attendance Marking Form -->
+<div class="attendance-marking-section">
+    <form method="POST" id="attendanceForm">
+        {% csrf_token %}
+        <input type="hidden" name="attendance_date" value="{{ selected_date|date:'Y-m-d' }}">
+        <input type="hidden" name="center_id" value="{{ selected_center }}">
+        
+        <div class="attendance-header">
+            <h3>📋 Attendance for {{ selected_date|date:"F d, Y" }}</h3>
+            <div class="attendance-actions">
+                <button type="button" class="btn btn-outline" onclick="markAllPresent()">
+                    <i class="fas fa-check-circle"></i> All Present
+                </button>
+                <button type="button" class="btn btn-outline" onclick="markAllAbsent()">
+                    <i class="fas fa-times-circle"></i> All Absent
+                </button>
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-save"></i> Save Attendance
+                </button>
+            </div>
+        </div>
+
+        <div class="attendance-grid">
+            {% for student in students %}
+            <div class="attendance-card" data-student-id="{{ student.id }}">
+                <div class="student-info">
+                    <div class="student-avatar">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                    <div class="student-details">
+                        <div class="student-name">{{ student.first_name }} {{ student.last_name }}</div>
+                        <div class="student-meta">
+                            <span class="student-id">{{ student.student_id }}</span>
+                            <span class="student-center">{{ student.center.name }}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="attendance-controls">
+                    <div class="attendance-buttons">
+                        <input type="hidden" name="student_{{ student.id }}" value="absent">
+                        <button type="button" class="attendance-btn present-btn" 
+                                onclick="markAttendance({{ student.id }}, 'present', this)">
+                            <i class="fas fa-check"></i>
+                            <span>Present</span>
+                        </button>
+                        <button type="button" class="attendance-btn absent-btn active" 
+                                onclick="markAttendance({{ student.id }}, 'absent', this)">
+                            <i class="fas fa-times"></i>
+                            <span>Absent</span>
+                        </button>
+                    </div>
+                    
+                    <div class="remarks-section">
+                        <input type="text" name="remarks_{{ student.id }}" 
+                               placeholder="Optional remarks..." class="remarks-input">
+                    </div>
+                </div>
+                
+                <!-- Existing attendance indicator -->
+                {% for attendance in today_attendance %}
+                    {% if attendance.student.id == student.id %}
+                        <div class="existing-attendance">
+                            <i class="fas fa-info-circle"></i>
+                            Already marked: 
+                            {% if attendance.is_present %}
+                                <span class="present-text">Present</span>
+                            {% else %}
+                                <span class="absent-text">Absent</span>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            {% empty %}
+            <div class="empty-state">
+                <i class="fas fa-user-plus empty-icon"></i>
+                <h3>No Students Found</h3>
+                <p>Please select a center or add students to mark attendance.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </form>
+</div>
+
+<!-- Today's Attendance Summary -->
+{% if today_attendance %}
+<div class="attendance-summary-section">
+    <h3>📊 Today's Attendance Summary</h3>
+    <div class="summary-grid">
+        <div class="summary-card">
+            <div class="summary-icon present">
+                <i class="fas fa-user-check"></i>
+            </div>
+            <div class="summary-content">
+                <div class="summary-value">{{ today_attendance|length }}</div>
+                <div class="summary-label">Total Marked</div>
+            </div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-icon present">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="summary-content">
+                <div class="summary-value">
+                    {% for attendance in today_attendance %}
+                        {% if attendance.is_present %}{{ forloop.counter0|add:1 }}{% endif %}
+                    {% endfor %}
+                </div>
+                <div class="summary-label">Present</div>
+            </div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-icon absent">
+                <i class="fas fa-times-circle"></i>
+            </div>
+            <div class="summary-content">
+                <div class="summary-value">
+                    {% for attendance in today_attendance %}
+                        {% if not attendance.is_present %}{{ forloop.counter0|add:1 }}{% endif %}
+                    {% endfor %}
+                </div>
+                <div class="summary-label">Absent</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<script>
+function markAttendance(studentId, status, button) {
+    const card = button.closest('.attendance-card');
+    const hiddenInput = card.querySelector(`input[name="student_${studentId}"]`);
+    const buttons = card.querySelectorAll('.attendance-btn');
+    
+    // Remove active class from all buttons
+    buttons.forEach(btn => btn.classList.remove('active'));
+    
+    // Add active class to clicked button
+    button.classList.add('active');
+    
+    // Update hidden input value
+    hiddenInput.value = status;
+    
+    // Add visual feedback
+    card.classList.remove('marked-present', 'marked-absent');
+    card.classList.add(`marked-${status}`);
+}
+
+function markAllPresent() {
+    const cards = document.querySelectorAll('.attendance-card');
+    cards.forEach(card => {
+        const studentId = card.dataset.studentId;
+        const presentBtn = card.querySelector('.present-btn');
+        markAttendance(studentId, 'present', presentBtn);
+    });
+}
+
+function markAllAbsent() {
+    const cards = document.querySelectorAll('.attendance-card');
+    cards.forEach(card => {
+        const studentId = card.dataset.studentId;
+        const absentBtn = card.querySelector('.absent-btn');
+        markAttendance(studentId, 'absent', absentBtn);
+    });
+}
+
+// Form submission with loading state
+document.getElementById('attendanceForm').addEventListener('submit', function(e) {
+    const submitBtn = this.querySelector('button[type="submit"]');
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+    submitBtn.disabled = true;
+});
+</script>
+{% endblock %}
